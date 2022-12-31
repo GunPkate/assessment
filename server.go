@@ -11,6 +11,30 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func dbConnection() {
+	var err error
+	var url string = "postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq"
+	// db, err = sql.Open("postgres", os.Getenv(("DATABASE_URL")))
+	db, err = sql.Open("postgres", url)
+	if err != nil {
+		log.Fatal("Connection error", err)
+	}
+	fmt.Println("Server running")
+	defer db.Close()
+
+	createTb := `CREATE TABLE IF NOT EXISTS expenses (
+		id SERIAL PRIMARY KEY,
+		title TEXT,
+		amount FLOAT,
+		note TEXT,
+		tags TEXT[]
+	);`
+	_, err = db.Exec(createTb)
+	if err != nil {
+		log.Fatal("can't create table", err)
+	}
+}
+
 func serverHealthHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, "OK")
 }
@@ -98,21 +122,22 @@ var db *sql.DB
 // db, err = sql.Open("postgres", os.Getenv(("DATABASE_URL")))
 // DATABASE_URL = postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq
 func main() {
-	var err error
-	var url string = "postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq"
-	// db, err = sql.Open("postgres", os.Getenv(("DATABASE_URL")))
-	db, err = sql.Open("postgres", url)
-	if err != nil {
-		log.Fatal("Connection error", err)
-	}
-	fmt.Println("Server running")
-	defer db.Close()
+	// var err error
+	// var url string = "postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq"
+	// // db, err = sql.Open("postgres", os.Getenv(("DATABASE_URL")))
+	// db, err = sql.Open("postgres", url)
+	// if err != nil {
+	// 	log.Fatal("Connection error", err)
+	// }
+	// fmt.Println("Server running")
+	// defer db.Close()
 
-	createTb := `CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT,age INT);`
-	_, err = db.Exec(createTb)
-	if err != nil {
-		log.Fatal("can't create table", err)
-	}
+	// createTb := `CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT,age INT);`
+	// _, err = db.Exec(createTb)
+	// if err != nil {
+	// 	log.Fatal("can't create table", err)
+	// }
+	dbConnection()
 
 	e := echo.New()
 
@@ -124,7 +149,7 @@ func main() {
 	e.GET("/users/:id", getServerUsersByIDHandler)
 	e.POST("/users", createServerUsersHandler)
 
-	log.Println("Server start at: 2500")
-	log.Fatal(e.Start(":2500"))
+	log.Println("Server start at: 2565")
+	log.Fatal(e.Start(":2565"))
 	log.Println("Bye")
 }
