@@ -40,12 +40,12 @@ func getExpensesByIDHandler(c echo.Context) error {
 	id := c.Param("id")
 	stmt, err := db.Prepare("SELECT * from expenses WHERE id = $1")
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Err{Message: "can't prepare query all expenses statement"})
+		return c.JSON(http.StatusInternalServerError, Err{Message: "can't prepare query selected expenses statement"})
 	}
 
 	rows, err := stmt.Query(id)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Err{Message: "can't query all expenses:" + err.Error()})
+		return c.JSON(http.StatusInternalServerError, Err{Message: "can't query selected expenses:" + err.Error()})
 	}
 
 	expenses := []Expense{}
@@ -53,7 +53,7 @@ func getExpensesByIDHandler(c echo.Context) error {
 		var ex Expense
 		err = rows.Scan(&ex.id, &ex.title, &ex.amount, &ex.note, &ex.tags)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, Err{Message: "can't query all expenses:" + err.Error()})
+			return c.JSON(http.StatusInternalServerError, Err{Message: "can't query selected expenses:" + err.Error()})
 		}
 		expenses = append(expenses, ex)
 	}
