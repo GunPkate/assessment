@@ -20,16 +20,11 @@ var db *sql.DB
 // }
 
 type Expense struct {
-	// id     string  `json:"id"`
-	// title  string  `json:"title"`
-	// amount float64 `json:"amount"`
-	// note   string  `json:"note"`
-	// tags   string  `json:"tags"`
-	id     string
-	title  string
-	amount float64
-	note   string
-	tags   pq.StringArray
+	Id     string         `json:"id"`
+	Title  string         `json:"title"`
+	Amount float64        `json:"amount"`
+	Note   string         `json:"note"`
+	Tags   pq.StringArray `json:"tags"`
 }
 
 type Err struct {
@@ -38,26 +33,15 @@ type Err struct {
 
 func getExpensesByIDHandler(c echo.Context) error {
 	id := c.Param("id")
-	stmt, err := db.Prepare("SELECT * from expenses WHERE id = $1")
+	var ex Expense
+	row := db.QueryRow("SELECT * from expenses WHERE id = $1", id)
+
+	err := row.Scan(&ex.Id, &ex.Title, &ex.Amount, &ex.Note, &ex.Tags)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Err{Message: "can't prepare query selected expenses statement"})
 	}
 
-	rows, err := stmt.Query(id)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Err{Message: "can't query selected expenses:" + err.Error()})
-	}
-
-	expenses := []Expense{}
-	for rows.Next() {
-		var ex Expense
-		err = rows.Scan(&ex.id, &ex.title, &ex.amount, &ex.note, &ex.tags)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, Err{Message: "can't query selected expenses:" + err.Error()})
-		}
-		expenses = append(expenses, ex)
-	}
-	return c.JSON(http.StatusOK, expenses)
+	return c.JSON(http.StatusOK, ex)
 }
 
 func main() {
