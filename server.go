@@ -20,16 +20,11 @@ var db *sql.DB
 // }
 
 type Expense struct {
-	// id     string  `json:"id"`
-	// title  string  `json:"title"`
-	// amount float64 `json:"amount"`
-	// note   string  `json:"note"`
-	// tags   string  `json:"tags"`
-	id     string
-	title  string
-	amount float64
-	note   string
-	tags   pq.StringArray
+	Id     string         `json:"id"`
+	Title  string         `json:"title"`
+	Amount float64        `json:"amount"`
+	Note   string         `json:"note"`
+	Tags   pq.StringArray `json:"tags"`
 }
 
 type Err struct {
@@ -51,7 +46,7 @@ func getAllExpensesHandler(c echo.Context) error {
 	expenses := []Expense{}
 	for rows.Next() {
 		var ex Expense
-		err = rows.Scan(&ex.id, &ex.title, &ex.amount, &ex.note, &ex.tags)
+		err = rows.Scan(&ex.Id, &ex.Title, &ex.Amount, &ex.Note, &ex.Tags)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, Err{Message: "can't query all expenses:" + err.Error()})
 		}
