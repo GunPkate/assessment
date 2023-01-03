@@ -44,6 +44,27 @@ func getExpensesByIDHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, ex)
 }
 
+func postExpensesHandler(c echo.Context) error {
+	var ex Expense
+	err := c.Bind(&ex)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, Err{Message: err.Error()})
+	}
+
+	row := db.QueryRow("INSERT INTO expenses (title,amount,note,tags) VALUES($1,$2,$3,$4) RETURNING id",
+		ex.Title,
+		ex.Amount,
+		ex.Note,
+		ex.Tags,
+	)
+	err = row.Scan(&ex.Id)
+	if err != nil {
+		log.Fatal("can't insert data", err)
+	}
+
+	return c.JSON(http.StatusCreated, ex)
+}
+
 func main() {
 
 	// dbConnection()
@@ -75,6 +96,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.GET("/expenses/:id", getExpensesByIDHandler)
+	e.POST("/expenses", postExpensesHandler)
 
 	log.Println("Server start at: 2565")
 	log.Fatal(e.Start(":2565"))
