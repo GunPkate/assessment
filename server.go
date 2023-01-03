@@ -20,16 +20,11 @@ var db *sql.DB
 // }
 
 type Expense struct {
-	// id     string  `json:"id"`
-	// title  string  `json:"title"`
-	// amount float64 `json:"amount"`
-	// note   string  `json:"note"`
-	// tags   string  `json:"tags"`
-	id     string
-	title  string
-	amount float64
-	note   string
-	tags   pq.StringArray
+	Id     string         `json:"id"`
+	Title  string         `json:"title"`
+	Amount float64        `json:"amount"`
+	Note   string         `json:"note"`
+	Tags   pq.StringArray `json:"tags"`
 }
 
 type Err struct {
@@ -44,17 +39,17 @@ func postExpensesHandler(c echo.Context) error {
 	}
 
 	row := db.QueryRow("INSERT INTO expenses (title,amount,note,tags) VALUES($1,$2,$3,$4) RETURNING id",
-		ex.title,
-		ex.amount,
-		ex.note,
-		ex.tags,
+		ex.Title,
+		ex.Amount,
+		ex.Note,
+		ex.Tags,
 	)
-	err = row.Scan(&ex.id)
+	err = row.Scan(&ex.Id)
 	if err != nil {
 		log.Fatal("can't insert data", err)
 	}
 
-	return c.JSON(http.StatusOK, ex)
+	return c.JSON(http.StatusCreated, ex)
 }
 
 func main() {
