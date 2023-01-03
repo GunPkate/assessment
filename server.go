@@ -65,6 +65,30 @@ func postExpensesHandler(c echo.Context) error {
 	return c.JSON(http.StatusCreated, ex)
 }
 
+func getAllExpensesHandler(c echo.Context) error {
+
+	stmt, err := db.Prepare("SELECT * from expenses")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: "can't prepare query all expenses statement"})
+	}
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: "can't query all expenses:" + err.Error()})
+	}
+
+	expenses := []Expense{}
+	for rows.Next() {
+		var ex Expense
+		err = rows.Scan(&ex.Id, &ex.Title, &ex.Amount, &ex.Note, &ex.Tags)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, Err{Message: "can't query all expenses:" + err.Error()})
+		}
+		expenses = append(expenses, ex)
+	}
+	return c.JSON(http.StatusOK, expenses)
+}
+
 func main() {
 
 	// dbConnection()
@@ -97,6 +121,7 @@ func main() {
 
 	e.GET("/expenses/:id", getExpensesByIDHandler)
 	e.POST("/expenses", postExpensesHandler)
+	e.GET("/expenses", getAllExpensesHandler)
 
 	log.Println("Server start at: 2565")
 	log.Fatal(e.Start(":2565"))
