@@ -89,6 +89,27 @@ func getAllExpensesHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, expenses)
 }
 
+func updateExpensesHandler(c echo.Context) error {
+	var ex Expense
+
+	id := c.Param("id")
+
+	if err := c.Bind(&ex); err != nil {
+		return c.JSON(http.StatusBadRequest, Err{Message: err.Error()})
+	}
+	ex.Id = id
+	stmt, err := db.Prepare("UPDATE expenses SET title=$2, amount=$3, note=$4, tags=$5 WHERE id=$1")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: err.Error()})
+	}
+	_, err = stmt.Exec(ex.Id, ex.Title, ex.Amount, ex.Note, ex.Tags)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Err{Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, ex)
+}
+
 func main() {
 
 	// dbConnection()
@@ -122,6 +143,7 @@ func main() {
 	e.GET("/expenses/:id", getExpensesByIDHandler)
 	e.POST("/expenses", postExpensesHandler)
 	e.GET("/expenses", getAllExpensesHandler)
+	e.PUT("/expenses/:id", updateExpensesHandler)
 
 	log.Println("Server start at: 2565")
 	log.Fatal(e.Start(":2565"))
