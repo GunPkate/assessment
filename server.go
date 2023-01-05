@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/GunPkate/assessment/handler/expenses"
 	"github.com/labstack/echo/v4"
@@ -11,8 +13,8 @@ import (
 )
 
 func initConnection() *sql.DB {
-	// connStr := os.Getenv("DATABASE_URL")
-	connStr := "postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq"
+	connStr := os.Getenv("DATABASE_URL")
+	// connStr := "postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -42,6 +44,18 @@ func main() {
 	e.Use(middleware.Recover())
 
 	h := expenses.DdbConnection(db)
+
+	// middleware check Authorization
+	e.Use(echo.MiddlewareFunc(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			headers := c.Request().Header.Get("Authorization")
+			if headers != "November 10, 2009" {
+				return c.JSON(http.StatusUnauthorized, echo.Map{"message": "Unauthorized"})
+			}
+			return next(c)
+		}
+	}))
+
 	e.GET("/expenses/:id", h.GetExpensesByIDHandler)
 	e.POST("/expenses", h.PostExpensesHandler)
 	e.GET("/expenses", h.GetAllExpensesHandler)
@@ -50,8 +64,4 @@ func main() {
 	log.Println("Server start at: 2565")
 	log.Fatal(e.Start(":2565"))
 	log.Println("Bye")
-}
-
-func dbConnection(db *sql.DB) {
-	panic("unimplemented")
 }

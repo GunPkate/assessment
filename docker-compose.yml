@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  db:
+    container_name: postgres
+    image: postgres:15.1
+    environment:
+      POSTGRES_DB: goexpense
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 12345678
+    restart: always
+    ports:
+      - 5432:5432
+  webapi:
+    build: .
+    image: gunpkate/assessment
+    restart: always
+    ports:
+      - 2565:2565
+    environment:
+      - PORT=2565
+      - DATABASE_URL=postgresql://root:12345678@db/goexpense?sslmode=disable
+      # - DATABASE_URL=postgres://mkzchuoq:loPAe5lWPs4gsdvrMf2aKchys2xsGF0x@tiny.db.elephantsql.com/mkzchuoq
+    depends_on:
+      - db
